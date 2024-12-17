@@ -1,4 +1,4 @@
 package com.example.myapplication.UI;
 
-public class VacationDetails {
+public class VacationAdapter {
 }
