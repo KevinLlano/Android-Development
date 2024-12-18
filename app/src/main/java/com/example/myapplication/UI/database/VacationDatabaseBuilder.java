@@ -27,7 +27,7 @@ public abstract class VacationDatabaseBuilder extends RoomDatabase {
         if (INSTANCE == null) {
             synchronized (VacationDatabaseBuilder.class) {
                 if (INSTANCE == null) {  // Double-check to avoid race conditions
-                    // Build the database with Room's builder
+                    // DatabaseBuilder instance
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                                     VacationDatabaseBuilder.class, "MyVacationDatabase.db")
                             .fallbackToDestructiveMigration()  // Wipes and rebuilds the database on version mismatch

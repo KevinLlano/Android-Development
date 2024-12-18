@@ -1,21 +1,34 @@
 package com.example.myapplication.UI.entities;
 
 import androidx.room.Entity;
+import androidx.room.ForeignKey;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "excursions")
+@Entity(
+        tableName = "excursions",
+        foreignKeys = @ForeignKey(
+                entity = Vacation.class, // The referenced entity
+                parentColumns = "vacationId",
+                childColumns = "vacationId",
+                onDelete = ForeignKey.CASCADE
+        ),
+        indices = @Index(value = "vacationId") // index for vacationId
+)
 public class Excursion {
 
     @PrimaryKey(autoGenerate = true)
     private int excursionID;
     private String excursionTitle;
     private String excursionDate;
+    private int vacationId; // The foreign key column referencing Vacation table
 
-    // Constructor
-    public Excursion(int excursionID, String excursionTitle, String excursionDate) {
+    // Constructors
+    public Excursion(int excursionID, String excursionTitle, String excursionDate, int vacationId) {
         this.excursionID = excursionID;
         this.excursionTitle = excursionTitle;
         this.excursionDate = excursionDate;
+        this.vacationId = vacationId;
     }
 
     // Getters and Setters
@@ -42,4 +55,13 @@ public class Excursion {
     public void setExcursionDate(String excursionDate) {
         this.excursionDate = excursionDate;
     }
+
+    public int getVacationId() {
+        return vacationId;
+    }
+
+    public void setVacationId(int vacationId) {
+        this.vacationId = vacationId;
+    }
 }
+

@@ -15,23 +15,31 @@ import java.util.List;
 @Dao
 public interface VacationDAO {
 
-    // Inserts a vacation into the database PART 1
+    // Inserts a vacation into the database
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insert(Vacation vacation);
 
-    // Updates an existing vacation in the database PART 1
+    // Updates an existing vacation
     @Update
     void update(Vacation vacation);
 
-    // Deletes a vacation from the database PART 1
+    // Deletes a vacation
     @Delete
     void delete(Vacation vacation);
 
-    // Retrieves all vacations ordered by their ID
+    // Retrieves all vacations ordered by ID (LiveData for UI updates, real time)
     @Query("SELECT * FROM vacations ORDER BY vacationId ASC")
-    LiveData<List<Vacation>> getAllVacations();  // Return LiveData<List<Vacation>>
+    LiveData<List<Vacation>> getAllVacations();
 
-    // Checks if there are associated excursions for a given vacation ID. Part 1
+    // Retrieves a single vacation by ID
+    @Query("SELECT * FROM vacations WHERE vacationId = :vacationId LIMIT 1")
+    Vacation getVacationByID(int vacationId);
+
+    // Retrieves the vacation title by ID
+    @Query("SELECT vacationTitle FROM vacations WHERE vacationId = :vacationId")
+    String getVacationTitle(int vacationId);
+
+    // Retrieves excursion count for a specific vacation ID
     @Query("SELECT COUNT(*) FROM excursions WHERE vacationId = :vacationId")
     int getExcursionCount(int vacationId);
 }

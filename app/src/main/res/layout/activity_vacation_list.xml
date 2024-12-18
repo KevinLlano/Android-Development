@@ -19,8 +19,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.976"
-        app:srcCompat="@drawable/baseline_add_24" />
-<!--        android:contentDescription="@string/add_vacation" />-->
+        app:srcCompat="@drawable/baseline_add_24"
+        android:contentDescription="@string/add_vacation" />
 
     <!-- RecyclerView for listing vacation items -->
     <androidx.recyclerview.widget.RecyclerView

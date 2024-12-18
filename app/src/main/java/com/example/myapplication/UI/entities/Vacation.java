@@ -14,7 +14,7 @@ public class Vacation {
     private String startDate;
     private String endDate;
 
-    // Constructor to initialize Vacation fields.
+    // Constructors
     public Vacation(int vacationId, String vacationTitle, String vacationHotel, String startDate, String endDate) {
         this.vacationId = vacationId;
         this.vacationTitle = vacationTitle;

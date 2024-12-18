@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">My Application</string>
+    <string name="add_vacation">Add Vacation</string>
+    <string name="no_excursion_title">No excursion title</string>
+    <string name="welcome_message">Welcome to my Vacation Planner!</string>
+    <string name="enter_button_text">ENTER</string>
+    <string name="image_content_description">Home Icon</string>
+
 </resources>

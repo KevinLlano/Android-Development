@@ -25,10 +25,11 @@ public class Repository {
         mVacationDAO = db.vacationDAO();
     }
 
-    // Retrieve all vacations (LiveData for UI updates)
+    // Retrieve all vacations (LiveData for UI updates, real time)
     public LiveData<List<Vacation>> getAllVacations() {
         return mVacationDAO.getAllVacations();
     }
+
 
     // Insert vacation
     public void insertVacation(Vacation vacation) {
@@ -40,7 +41,7 @@ public class Repository {
         databaseExecutor.execute(() -> mVacationDAO.update(vacation));
     }
 
-    // Delete vacation and Validation check. Part 1
+    // Delete vacation and perform validation check
     public void deleteVacation(Vacation vacation) {
         databaseExecutor.execute(() -> {
             int excursionCount = mVacationDAO.getExcursionCount(vacation.getVacationId());
@@ -67,8 +68,23 @@ public class Repository {
         databaseExecutor.execute(() -> mExcursionDAO.delete(excursion));
     }
 
-    // Retrieve all excursions (LiveData for UI updates)
+    // Retrieve all excursions (LiveData for UI updates, real time)
     public LiveData<List<Excursion>> getAllExcursions() {
         return mExcursionDAO.getAllExcursionsLiveData();
+    }
+
+    // Get a vacation by ID
+    public Vacation getVacationByID(int vacationId) {
+        return mVacationDAO.getVacationByID(vacationId);
+    }
+
+    // Get vacation title by ID
+    public String getVacationTitle(int vacationId) {
+        return mVacationDAO.getVacationTitle(vacationId);
+    }
+
+    // Get excursion count for a vacation
+    public int getExcursionCount(int vacationId) {
+        return mVacationDAO.getExcursionCount(vacationId);
     }
 }
