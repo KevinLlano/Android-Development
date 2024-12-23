@@ -12,23 +12,26 @@ import androidx.core.app.NotificationCompat;
 
 import com.example.myapplication.R;
 
-// Part B3
 public class AlertReceiver extends BroadcastReceiver {
     String channel_id = "vacation_alert_channel";
-    static int notificationID;
+    static int notificationID = 1;
 
-    // BroadcastReceiver broadcast alerts, messages, notification, etc.
+    // BroadcastReceiver for alerts, messages, notifications, etc.
     @Override
     public void onReceive(Context context, Intent intent) {
-        Toast.makeText(context, intent.getStringExtra("message"), Toast.LENGTH_LONG).show();
-        createNotificationChannel(context, channel_id);
-        Notification n = new NotificationCompat.Builder(context, channel_id)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentText(intent.getStringExtra("message"))
-                .setContentTitle("Vacation Alert")
-                .build();
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(notificationID++, n);
+        String message = intent.getStringExtra("message");
+        if (message != null) {
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+            createNotificationChannel(context, channel_id);
+            Notification n = new NotificationCompat.Builder(context, channel_id)
+                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setContentText(message)
+                    .setContentTitle("Excursion Alert")
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .build();
+            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.notify(notificationID++, n);
+        }
     }
 
     private void createNotificationChannel(Context context, String CHANNEL_ID) {

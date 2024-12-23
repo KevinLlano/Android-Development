@@ -2,8 +2,6 @@ package com.example.myapplication.UI.database;
 
 import android.app.Application;
 
-import androidx.lifecycle.LiveData;
-
 import com.example.myapplication.UI.dao.ExcursionDAO;
 import com.example.myapplication.UI.dao.VacationDAO;
 import com.example.myapplication.UI.entities.Excursion;
@@ -25,11 +23,10 @@ public class Repository {
         mVacationDAO = db.vacationDAO();
     }
 
-    // Retrieve all vacations (LiveData for UI updates, real time)
-    public LiveData<List<Vacation>> getAllVacations() {
+    // Retrieve all vacations
+    public List<Vacation> getAllVacations() {
         return mVacationDAO.getAllVacations();
     }
-
 
     // Insert vacation
     public void insertVacation(Vacation vacation) {
@@ -41,16 +38,9 @@ public class Repository {
         databaseExecutor.execute(() -> mVacationDAO.update(vacation));
     }
 
-    // Delete vacation and perform validation check
+    // Delete vacation
     public void deleteVacation(Vacation vacation) {
-        databaseExecutor.execute(() -> {
-            int excursionCount = mVacationDAO.getExcursionCount(vacation.getVacationId());
-            if (excursionCount == 0) {
-                mVacationDAO.delete(vacation);
-            } else {
-                throw new IllegalStateException("Cannot delete vacation with associated excursions.");
-            }
-        });
+        databaseExecutor.execute(() -> mVacationDAO.delete(vacation));
     }
 
     // Insert excursion
@@ -68,9 +58,9 @@ public class Repository {
         databaseExecutor.execute(() -> mExcursionDAO.delete(excursion));
     }
 
-    // Retrieve all excursions (LiveData for UI updates, real time)
-    public LiveData<List<Excursion>> getAllExcursions() {
-        return mExcursionDAO.getAllExcursionsLiveData();
+    // Retrieve all excursions
+    public List<Excursion> getAllExcursions() {
+        return mExcursionDAO.getAllExcursions();
     }
 
     // Get a vacation by ID
@@ -78,13 +68,13 @@ public class Repository {
         return mVacationDAO.getVacationByID(vacationId);
     }
 
-    // Get vacation title by ID
-    public String getVacationTitle(int vacationId) {
-        return mVacationDAO.getVacationTitle(vacationId);
+    // Get excursion by ID
+    public Excursion getExcursionByID(int excursionId) {
+        return mExcursionDAO.getExcursionByID(excursionId);
     }
 
-    // Get excursion count for a vacation
-    public int getExcursionCount(int vacationId) {
-        return mVacationDAO.getExcursionCount(vacationId);
+    // Get excursions by vacation ID
+    public List<Excursion> getExcursionsByVacationId(int vacationId) {
+        return mExcursionDAO.getExcursionsByVacationId(vacationId);
     }
 }

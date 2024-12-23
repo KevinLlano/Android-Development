@@ -12,7 +12,7 @@ import com.example.myapplication.UI.entities.Excursion;
 import com.example.myapplication.UI.entities.Vacation;
 
 // Define the database class for Room
-@Database(entities = {Vacation.class, Excursion.class}, version = 1, exportSchema = false)
+@Database(entities = {Vacation.class, Excursion.class}, version = 2, exportSchema = false)
 public abstract class VacationDatabaseBuilder extends RoomDatabase {
 
     // Abstract methods to provide DAOs (Data Access Objects)
@@ -30,7 +30,7 @@ public abstract class VacationDatabaseBuilder extends RoomDatabase {
                     // DatabaseBuilder instance
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                                     VacationDatabaseBuilder.class, "MyVacationDatabase.db")
-                            .fallbackToDestructiveMigration()  // Wipes and rebuilds the database on version mismatch
+                            .fallbackToDestructiveMigration()
                             .build();  // Finalize the database creation
                 }
             }

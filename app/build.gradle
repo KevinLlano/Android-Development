@@ -22,9 +22,19 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            // Force a single Kotlin version
+            force "org.jetbrains.kotlin:kotlin-stdlib:1.8.10"
+            force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.10"
+            force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10"
+        }
     }
 }
 
@@ -36,7 +46,17 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
+    // ViewModel and LiveData for Java
+    implementation("androidx.lifecycle:lifecycle-viewmodel:2.6.0") {
+        exclude group: "org.jetbrains.kotlin"
+    }
+    implementation("androidx.lifecycle:lifecycle-livedata:2.6.0") {
+        exclude group: "org.jetbrains.kotlin"
+    }
+
     // Room Dependencies
-    implementation "androidx.room:room-runtime:2.5.2"
+    implementation("androidx.room:room-runtime:2.5.2") {
+        exclude group: "org.jetbrains.kotlin"
+    }
     annotationProcessor "androidx.room:room-compiler:2.5.2"
 }

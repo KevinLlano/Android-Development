@@ -29,7 +29,9 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(v -> {
             // Handle button click
             Intent intent = new Intent(MainActivity.this, VacationList.class);
+
             startActivity(intent);
+
         });
     }
 

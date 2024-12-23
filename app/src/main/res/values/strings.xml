@@ -5,5 +5,12 @@
     <string name="welcome_message">Welcome to my Vacation Planner!</string>
     <string name="enter_button_text">ENTER</string>
     <string name="image_content_description">Home Icon</string>
+    <string name="add_excursion">Add Excursion</string>
+    <string name="vacation_title">Vacation Title:</string> <string name="vacation_title_hint">Vacation Title</string> <string name="hotel_name">Hotel Name:</string> <string name="hotel_name_hint">Hotel Name</string> <string name="start_date">Start Date</string> <string name="end_date">End Date</string>
+
+        <string name="excursion_title_hint">Title</string>
+        <string name="excursion_date_button_text">Excursion Date</string>
+
+
 
 </resources>

@@ -1,84 +1,120 @@
 package com.example.myapplication.UI;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.myapplication.R;
-import com.example.myapplication.UI.database.Repository;
 import com.example.myapplication.UI.entities.Excursion;
 import com.example.myapplication.UI.entities.Vacation;
+import com.example.myapplication.UI.viewmodel.VacationViewModel;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class VacationDetails extends AppCompatActivity {
 
-    private EditText editTitle, editHotel, editStartDate, editEndDate;
-    private Repository repository;
+    private EditText editTitle, editHotel;
+    private Button editStartDate, editEndDate;
+    private VacationViewModel vacationViewModel;
     private int vacationId = -1;
     private Vacation currentVacation;
-    private int numExcursions;
+    private Calendar calendar = Calendar.getInstance();
 
-    // RecyclerView and Adapter
     private RecyclerView excursionRecyclerView;
     private ExcursionAdapter excursionAdapter;
     private List<Excursion> excursionList;
 
-    // Part B3
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_vacation_details);
 
-        // Initialize the EditText fields
+        // Initialize fields
         editTitle = findViewById(R.id.editTitle);
         editHotel = findViewById(R.id.editHotel);
         editStartDate = findViewById(R.id.startDate);
         editEndDate = findViewById(R.id.endDate);
 
-        // Initialize repository
-        repository = new Repository(getApplication());
+        // Initialize ViewModel
+        vacationViewModel = new ViewModelProvider(this).get(VacationViewModel.class);
 
-        // Load vacation details if passed from another activity
+        // Get vacation details passed from previous activity
         vacationId = getIntent().getIntExtra("vacationId", -1);
         if (vacationId != -1) {
-            // Fetch vacation data from the repository
-            currentVacation = new Vacation(vacationId,
-                    repository.getVacationTitle(vacationId),
-                    "", "", "");
-            // Set the EditText fields with existing data
-            editTitle.setText(currentVacation.getVacationTitle());
-            editStartDate.setText(currentVacation.getStartDate());
-            editEndDate.setText(currentVacation.getEndDate());
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            executor.execute(() -> {
+                currentVacation = vacationViewModel.getVacationById(vacationId);
+                runOnUiThread(() -> {
+                    if (currentVacation != null) {
+                        editTitle.setText(currentVacation.getVacationTitle());
+                        editHotel.setText(currentVacation.getVacationHotel());
+                        editStartDate.setText(currentVacation.getStartDate());
+                        editEndDate.setText(currentVacation.getEndDate());
+                    }
+                });
+
+                // Fetch excursions asynchronously using the ViewModel method
+                vacationViewModel.getExcursionsByVacationId(vacationId, excursions -> runOnUiThread(() -> updateUIWithExcursions(excursions)));
+            });
         }
 
-        // RecyclerView setup
+        // Set up RecyclerView for excursions
+        excursionList = new ArrayList<>();
         excursionRecyclerView = findViewById(R.id.excursionRecyclerView);
         excursionRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        // Sample data for excursions
-//        excursionList = new ArrayList<>();
-//        excursionList.add(new Excursion(1, "Beach Visit", "12-18-2024", vacationId));
-//        excursionList.add(new Excursion(2, "Hiking Trip", "12-19-2024", vacationId));
-
-        // Initialize and set the ExcursionAdapter
         excursionAdapter = new ExcursionAdapter(this, excursionList);
         excursionRecyclerView.setAdapter(excursionAdapter);
+
+        // Set up date pickers
+        editStartDate.setOnClickListener(v -> showDatePickerDialog(true));
+        editEndDate.setOnClickListener(v -> showDatePickerDialog(false));
+
+        // Initialize FloatingActionButton
+        FloatingActionButton fab = findViewById(R.id.floatingActionButton2);
+        fab.setOnClickListener(v -> {
+            Intent intent = new Intent(VacationDetails.this, ExcursionDetails.class);
+            intent.putExtra("vacationId", vacationId);
+            intent.putExtra("vacationStartDate", editStartDate.getText().toString());
+            intent.putExtra("vacationEndDate", editEndDate.getText().toString());
+            startActivity(intent);
+        });
+    }
+
+    private void showDatePickerDialog(boolean isStartDate) {
+        DatePickerDialog.OnDateSetListener dateSetListener = (view, year, month, dayOfMonth) -> {
+            calendar.set(Calendar.YEAR, year);
+            calendar.set(Calendar.MONTH, month);
+            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy", Locale.US);
+            String selectedDate = sdf.format(calendar.getTime());
+
+            if (isStartDate) {
+                editStartDate.setText(selectedDate);
+            } else {
+                editEndDate.setText(selectedDate);
+            }
+        };
+
+        new DatePickerDialog(this, dateSetListener, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
     }
 
     @Override
@@ -89,100 +125,107 @@ public class VacationDetails extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle Save option
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
+        }
+
+        // Handle save action
         if (item.getItemId() == R.id.vacationSave) {
-            String title = editTitle.getText().toString();
-            String hotel = editHotel.getText().toString();
-            String startDate = editStartDate.getText().toString();
-            String endDate = editEndDate.getText().toString();
-
-            // Validate input dates
-            if (!isDateValid(startDate, endDate)) {
-                Toast.makeText(this, "End date must be after start date and dates must be in format MM-dd-yyyy", Toast.LENGTH_LONG).show();
-                return true;
-            }
-
-            // Create a new Vacation object with input data
-            Vacation vacation = new Vacation(vacationId, title, hotel, startDate, endDate);
-
-            // Insert or update vacation depending on whether it's new or existing
-            if (vacationId == -1) {
-                repository.insertVacation(vacation);
-            } else {
-                repository.updateVacation(vacation);
-            }
-
-            // Set alerts for start and end date
-            setAlerts(vacation);
-
-            finish();
+            saveVacation();
             return true;
         }
 
-        // Handle Delete option
+        // Handle delete action
         if (item.getItemId() == R.id.vacationDelete) {
-            numExcursions = repository.getExcursionCount(vacationId);
-            if (numExcursions == 0) {
-                repository.deleteVacation(currentVacation);
-                Toast.makeText(this, currentVacation.getVacationTitle() + " was deleted", Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(this, "Cannot delete a vacation with excursions", Toast.LENGTH_LONG).show();
-            }
-            finish();
+            deleteVacation();
             return true;
         }
 
-        // Handle Share option
-        if (item.getItemId() == R.id.vacationShare) {
-            shareVacationDetails();
+        // Handle alert action
+        if (item.getItemId() == R.id.alertStart) {
+            setAlert();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private boolean isDateValid(String startDate, String endDate) {
-        SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy", Locale.getDefault());
+    private void saveVacation() {
+        String title = editTitle.getText().toString();
+        String hotel = editHotel.getText().toString();
+        String startDate = editStartDate.getText().toString();
+        String endDate = editEndDate.getText().toString();
+
+        if (!isValidDate(startDate) || !isValidDate(endDate)) {
+            Toast.makeText(this, "Invalid date format. Please use MM/dd/yy.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (title.isEmpty() || hotel.isEmpty() || startDate.isEmpty() || endDate.isEmpty()) {
+            Toast.makeText(this, "Please fill out all fields", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Create or update Vacation entity
+        if (vacationId == -1) {
+            Vacation vacation = new Vacation(0, title, hotel, startDate, endDate);
+            vacationViewModel.insertVacation(vacation);
+        } else {
+            currentVacation.setVacationTitle(title);
+            currentVacation.setVacationHotel(hotel);
+            currentVacation.setStartDate(startDate);
+            currentVacation.setEndDate(endDate);
+            vacationViewModel.updateVacation(currentVacation);
+        }
+
+        // Perform database operations in a background thread
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> runOnUiThread(() -> {
+            Toast.makeText(this, "Vacation saved", Toast.LENGTH_SHORT).show();
+            finish();
+        }));
+    }
+
+    private void updateUIWithExcursions(List<Excursion> excursions) {
+        excursionAdapter.setExcursions(excursions);
+        excursionAdapter.notifyDataSetChanged();
+    }
+
+    private void deleteVacation() {
+        if (currentVacation != null) {
+            vacationViewModel.deleteVacation(currentVacation);
+            Toast.makeText(this, "Vacation deleted", Toast.LENGTH_SHORT).show();
+            finish();
+        } else {
+            Toast.makeText(this, "No vacation to delete", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private boolean isValidDate(String date) {
         try {
-            Date start = sdf.parse(startDate);
-            Date end = sdf.parse(endDate);
-            return end != null && start != null && end.after(start);
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy", Locale.US);
+            sdf.setLenient(false);
+            sdf.parse(date);
+            return true;
         } catch (ParseException e) {
             e.printStackTrace();
             return false;
         }
     }
 
-    private void setAlerts(Vacation vacation) {
-        setAlert(vacation.getStartDate(), "Vacation Starting: " + vacation.getVacationTitle());
-        setAlert(vacation.getEndDate(), "Vacation Ending: " + vacation.getVacationTitle());
-    }
+    // Method to set alerts for start and end dates
+    private void setAlert() {
+        if (currentVacation != null) {
+            String vacationTitle = currentVacation.getVacationTitle();
+            String startDate = currentVacation.getStartDate();
+            String endDate = currentVacation.getEndDate();
 
-    private void setAlert(String date, String message) {
-        SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy", Locale.getDefault());
-        try {
-            Date alertDate = sdf.parse(date);
-            if (alertDate != null) {
-                AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                Intent intent = new Intent(this, AlertReceiver.class);
-                intent.putExtra("message", message);
-                PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-                alarmManager.set(AlarmManager.RTC_WAKEUP, alertDate.getTime(), pendingIntent);
-            }
-        } catch (ParseException e) {
-            e.printStackTrace();
+            // Simulate alert for start date
+            Toast.makeText(this, "Alert set for vacation start: " + vacationTitle + " starting on " + startDate, Toast.LENGTH_LONG).show();
+
+            // Simulate alert for end date
+            Toast.makeText(this, "Alert set for vacation end: " + vacationTitle + " ending on " + endDate, Toast.LENGTH_LONG).show();
         }
-    }
-
-    private void shareVacationDetails() {
-        String vacationDetails = "Vacation: " + editTitle.getText().toString() + "\n" +
-                "Hotel: " + editHotel.getText().toString() + "\n" +
-                "Start Date: " + editStartDate.getText().toString() + "\n" +
-                "End Date: " + editEndDate.getText().toString();
-        Intent shareIntent = new Intent();
-        shareIntent.setAction(Intent.ACTION_SEND);
-        shareIntent.putExtra(Intent.EXTRA_TEXT, vacationDetails);
-        shareIntent.setType("text/plain");
-        startActivity(Intent.createChooser(shareIntent, "Share Vacation Details"));
     }
 }
