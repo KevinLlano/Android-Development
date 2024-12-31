@@ -117,6 +117,24 @@ public class VacationDetails extends AppCompatActivity {
         new DatePickerDialog(this, dateSetListener, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
     }
 
+    // shareVacationDetails method to share vacations
+    private void shareVacationDetails() {
+        if (currentVacation != null) {
+            String vacationDetails = "Vacation: " + currentVacation.getVacationTitle() + "\n" +
+                    "Hotel: " + currentVacation.getVacationHotel() + "\n" +
+                    "Start Date: " + currentVacation.getStartDate() + "\n" +
+                    "End Date: " + currentVacation.getEndDate();
+
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("text/plain");
+            shareIntent.putExtra(Intent.EXTRA_TEXT, vacationDetails);
+            startActivity(Intent.createChooser(shareIntent, "Share via"));
+        } else {
+            Toast.makeText(this, "No vacation details to share", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_vacationdetails, menu);
@@ -145,6 +163,12 @@ public class VacationDetails extends AppCompatActivity {
         // Handle alert action
         if (item.getItemId() == R.id.alertStart) {
             setAlert();
+            return true;
+        }
+
+        // Vacation share added
+        if (item.getItemId() == R.id.vacationShare) {
+            shareVacationDetails();
             return true;
         }
 
